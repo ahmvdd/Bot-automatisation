@@ -1,0 +1,8 @@
+.env
+data/*.db
+data/session.json
+logs/
+__pycache__/
+*.pyc
+.playwright/
+.DS_Store
