@@ -1,5 +1,5 @@
 """
-Point d'entrée principal du bot de veille alternances IDF.
+Point d'entrée principal du bot de veille alternances IDF + Montpellier.
 
 Usage :
     python main.py            # Lance le bot en continu (scraping + récap à 08h00)
@@ -16,7 +16,7 @@ from database.repository import save_offer, get_new_offers, mark_as_notified, ge
 from scrapers.welcome_to_jungle import WelcomeToJungleScraper
 from scrapers.france_travail import FranceTravailScraper
 from notifications.telegram_bot import send_daily_recap, send_startup_message
-from utils.filters import is_alternance, is_idf, score_offer
+from utils.filters import is_alternance, is_target_location, is_tech, score_offer
 from utils.logger import get_logger
 from config import DAILY_RECAP_TIME
 
@@ -42,10 +42,12 @@ def run_scraping():
             total_scraped += len(offers)
 
             for offer in offers:
-                # Filtres : alternance + IDF
+                # Filtres : alternance + ville cible (IDF/Montpellier) + tech pur
                 if not is_alternance(offer["title"]):
                     continue
-                if not is_idf(offer.get("location", "")):
+                if not is_target_location(offer.get("location", "")):
+                    continue
+                if not is_tech(offer["title"]):
                     continue
 
                 score = score_offer(

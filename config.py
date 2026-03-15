@@ -21,5 +21,11 @@ IDF_ZONES = [
     "vincennes", "créteil", "versailles", "nanterre", "montreuil"
 ]
 
+MONTPELLIER_ZONES = [
+    "montpellier", "hérault", "34", "montpelier",
+]
+
+TARGET_ZONES = IDF_ZONES + MONTPELLIER_ZONES
+
 # Heure d'envoi du récap quotidien (format HH:MM)
 DAILY_RECAP_TIME = "08:00"

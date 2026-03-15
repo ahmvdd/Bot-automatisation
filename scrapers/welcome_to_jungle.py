@@ -13,30 +13,44 @@ ALGOLIA_API_KEY = "4bd8f6215d0cc52b26430765769e65a0"
 ALGOLIA_INDEX = "wttj_jobs_production_fr"
 ALGOLIA_URL = f"https://{ALGOLIA_APP_ID}-dsn.algolia.net/1/indexes/{ALGOLIA_INDEX}/query"
 
-IDF_QUERY = "Île-de-France"
+# Villes cibles avec coordonnées GPS
+TARGET_LOCATIONS = [
+    {"name": "idf",          "lat": 48.8566, "lng": 2.3522,  "radius": 50000},
+    {"name": "montpellier",  "lat": 43.6119, "lng": 3.8772,  "radius": 30000},
+]
+
+# Requêtes tech ciblées
+TECH_QUERIES = [
+    "développeur alternance",
+    "data engineer alternance",
+    "devops alternance",
+    "cybersécurité alternance",
+    "cloud alternance",
+    "python alternance",
+    "machine learning alternance",
+    "software engineer alternance",
+]
 
 
 class WelcomeToJungleScraper(BaseScraper):
     SOURCE_NAME = "welcome_to_jungle"
 
     def scrape(self) -> list:
+        seen_urls = set()
         offers = []
-        page = 0
 
-        while True:
-            batch = self._fetch_page(page)
-            if not batch:
-                break
-            offers.extend(batch)
-            # Max 3 pages (90 offres) pour ne pas surcharger
-            if page >= 2:
-                break
-            page += 1
+        for location in TARGET_LOCATIONS:
+            for query in TECH_QUERIES:
+                batch = self._fetch_page(query=query, location=location)
+                for o in batch:
+                    if o["url"] not in seen_urls:
+                        seen_urls.add(o["url"])
+                        offers.append(o)
 
         logger.info(f"[WTJ] {len(offers)} offres trouvées")
         return offers
 
-    def _fetch_page(self, page: int) -> list:
+    def _fetch_page(self, query: str, location: dict, page: int = 0) -> list:
         headers = {
             "X-Algolia-Application-Id": ALGOLIA_APP_ID,
             "X-Algolia-API-Key": ALGOLIA_API_KEY,
@@ -45,14 +59,14 @@ class WelcomeToJungleScraper(BaseScraper):
             "Origin": "https://www.welcometothejungle.com",
         }
         payload = {
-            "query": "alternance",
+            "query": query,
             "hitsPerPage": 30,
             "page": page,
             "facetFilters": [
                 ["contract_type:alternance", "contract_type:apprenticeship"]
             ],
-            "aroundLatLng": "48.8566,2.3522",
-            "aroundRadius": 50000,
+            "aroundLatLng": f"{location['lat']},{location['lng']}",
+            "aroundRadius": location["radius"],
             "attributesToRetrieve": [
                 "name", "organization", "offices", "slug",
                 "contract_type", "published_at", "organization_slug"
@@ -64,7 +78,7 @@ class WelcomeToJungleScraper(BaseScraper):
             resp.raise_for_status()
             return self._parse_hits(resp.json().get("hits", []))
         except Exception as e:
-            logger.warning(f"[WTJ] Erreur page {page} : {e}")
+            logger.warning(f"[WTJ] Erreur ({location['name']}, {query}) : {e}")
             return []
 
     def _build_url(self, job: dict, org: dict) -> str:
