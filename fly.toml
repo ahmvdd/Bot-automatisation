@@ -1,0 +1,12 @@
+app = "bot-automatisation"
+primary_region = "cdg"
+
+[build]
+
+[env]
+  DB_PATH = "data/offers.db"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
