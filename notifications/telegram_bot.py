@@ -42,10 +42,12 @@ def send_daily_recap(offers: list[dict], stats: dict) -> bool:
     """
     if not offers:
         message = (
-            "🔍 <b>Récap Alternances IDF</b>\n"
+            f"👋 <b>Bonjour !</b>\n"
             f"📅 {datetime.now().strftime('%A %d %B %Y')}\n\n"
-            "Aucune nouvelle offre aujourd'hui. 😴\n\n"
-            f"📊 Total en base : <b>{stats.get('total', 0)}</b> offres"
+            "🤖 Le bot tourne correctement.\n"
+            "🔍 Pas de nouvelle offre depuis hier.\n\n"
+            f"📊 Total en base : <b>{stats.get('total', 0)}</b> offres\n"
+            f"🕐 Prochain scan dans ~6h"
         )
         return _send_message(message)
 
@@ -125,9 +127,11 @@ def send_alert(offer: dict) -> bool:
 def send_startup_message() -> bool:
     """Message envoyé au démarrage du bot pour confirmer qu'il tourne."""
     message = (
-        "✅ <b>Bot Alternances IDF démarré</b>\n"
+        "✅ <b>Bot Alternances IDF — démarré</b>\n"
         f"🕐 {datetime.now().strftime('%d/%m/%Y à %H:%M')}\n\n"
-        "Le récap quotidien sera envoyé tous les jours à 08h00.\n"
-        "Le scraping tourne en arrière-plan. 🤖"
+        "📡 Scraping actif (toutes les 6h)\n"
+        "📬 Récap quotidien à <b>08h00</b>\n"
+        "💬 Bonjour envoyé chaque matin même sans offres\n\n"
+        "Tout roule. 🤖"
     )
     return _send_message(message)
